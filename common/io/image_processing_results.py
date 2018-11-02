@@ -4,6 +4,7 @@ import pickle
 def load_person_detections(path, video_fps, frame_count):
     f = open(path, 'rb')
     data = pickle.load(f)
+    print(data)
     f.close()
 
     # TODO: generate list of person detections for each frame and convert frame number to video time using timedelta

@@ -1,5 +1,6 @@
 import pandas as pd
-
+import numpy as np
+from datetime import timedelta
 
 def read_label_xls(path):
     """
@@ -54,3 +55,28 @@ def read_label_xls(path):
 
     # convert timestamp
     return green_labels, red_labels, blue_labels
+
+
+
+# This method reads all timestamps from the excel file:     [Author: CM]
+def read_timestamp(path):
+    file = pd.read_excel(path, skiprows=7)
+    value = np.array(file)[:,[0,2,10,18]]
+
+
+    num_timestamps = len(value)
+
+
+    print("Test\t\t", value[0,0])
+    print("Test\t\t", value[0,0].minute)
+    print("Test\t\t", value[0,0].second)
+    all_timestamps = []
+    for i in range(num_timestamps):
+        minutes = value[i,0].minute
+        seconds = value[i,0].second
+
+        erg = minutes * 60 * 25 + seconds * 25
+        all_timestamps.append([erg, value[i,[1,2,3]]])
+        # print(erg)
+
+    return all_timestamps
