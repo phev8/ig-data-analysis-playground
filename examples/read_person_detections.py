@@ -17,10 +17,13 @@ with open(filename, 'rb') as f:
 def show_data():
     print(data)
 
+def get_data():
+    return data
+
 # for i in range(len(data['results'])):
     # print(data['results'][i]['frame_index'])
 
-
+# Hier stimmt was nicht. Ein ROI Eintrag ist von der Form: [ 189, 1197,  354, 1279]. Somit sind roi[1] und roi[3] x-Coordinaten
 def get_center(roi):
     cx = (roi[0] + roi[2])/2.0
     cy = (roi[1] + roi[3])/2.0

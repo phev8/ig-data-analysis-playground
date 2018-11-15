@@ -60,7 +60,7 @@ def read_label_xls(path):
 
 # This method reads all timestamps from the excel file:     [Author: CM]
 def read_timestamp(path):
-    file = pd.read_excel(path, skiprows=7)
+    file = pd.read_excel(path, skiprows=2)
     value = np.array(file)[:,[0,2,10,18]]
 
 
@@ -80,3 +80,6 @@ def read_timestamp(path):
         # print(erg)
 
     return all_timestamps
+
+
+

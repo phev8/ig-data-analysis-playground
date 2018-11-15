@@ -4,6 +4,9 @@ from common.io.labels import *
 from common.io.image_processing_results import load_person_detections
 from common.io.metadata import load_video_infos
 from examples.read_person_detections import get_person_positions
+import matplotlib.pyplot as plt
+
+
 
 # experiment_root = '/Volumes/DataDrive/igroups_recordings/southampton_5'
 
@@ -19,7 +22,7 @@ label_path = os.path.join(experiment_root, 'labels', 'Labels D2_S2.xlsx')
 labels_g, labels_r, labels_b,  = read_label_xls(label_path)
 
 
-# print(labels_b.position)
+# print(labels_g.position)
 # print(labels_g.position)
 
 class ImageGrid:
@@ -112,17 +115,56 @@ def convert_fuzzy_labels_to_grid(list, n_x, n_y):
 
 
 
+
+
+
+
+def extend_labels():
+    org_labels = read_timestamp(label_path)
+    print(".............",org_labels)
+    extended_timestamps = []
+    extended_fuzzy_positions = []
+
+    for i in range(len(org_labels)-1):
+        start_time = org_labels[i][0]
+        end_time = org_labels[i+1][0]
+        cur_label = org_labels[i][1]
+
+        # print("start_time =", start_time)
+        # print("end_time =", end_time)
+        # print("cur_label =", cur_label)
+
+        for j in range(start_time, end_time):
+            extended_timestamps.append(j)
+            extended_fuzzy_positions.append(cur_label)
+
+    # print("~~~~~~~~~~~~\n", extended_timestamps)
+    # print("~~~~~~~~~~~~\n", extended_fuzzy_positions)
+
+    return [extended_timestamps, extended_fuzzy_positions]
+
+# extend_labels()
+
+
+
+
+
+"""
+
 def compare_lables_with_detections():
     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
-    temp = read_timestamp(label_path)
-    all_labled_timestamps = []
-    all_fuzzy_positions = []
+    # temp = read_timestamp(label_path)
+    temp = extend_labels()
+    all_labled_timestamps = temp[0]
+    all_fuzzy_positions = temp[1]
 
-    for i in range(len(temp)):
-        all_labled_timestamps.append(temp[i][0])
-        all_fuzzy_positions.append(temp[i][1])
-
+    print("###############\n", temp)
+    
+    # for i in range(len(temp)):
+    #     all_labled_timestamps.append(temp[i][0])
+    #     all_fuzzy_positions.append(temp[i][1])
+    
     first_timestamp = all_labled_timestamps[0]
     last_timestamp = all_labled_timestamps[len(all_labled_timestamps)-1]
     print("all_timestamps =", all_labled_timestamps)
@@ -131,7 +173,7 @@ def compare_lables_with_detections():
 
     person_positions = get_person_positions()
 
-    print(person_positions)
+    print("++++++++++++++",len(person_positions))
     print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
     counter = 0
     correct_classified = 0
@@ -139,7 +181,7 @@ def compare_lables_with_detections():
     for labled_frames in all_labled_timestamps:
         print(counter, "of", len(all_labled_timestamps))
 
-        all_person_grid = np.zeros(shape=(2, 4))
+        all_person_grid = np.zeros(shape=(grid_y, grid_x))
 
         # iterate over all timestamps:
         for i in range(len(person_positions)):
@@ -167,8 +209,181 @@ def compare_lables_with_detections():
     print("wrong_classified =", wrong_classified)
 
     # return
+"""
+
+
+def calc_start_and_end_frame(person_positions, first_timestamp, last_timestamp):
+    startwith = 0
+    endwith = 0
+
+    for j in range(len(person_positions)):
+        if person_positions[j][1] == first_timestamp:
+            startwith = j
+            break
+
+    for j in range(startwith + 1, len(person_positions)):
+        if person_positions[j][1] == last_timestamp:
+            endwith = j
+
+    return [startwith, endwith]
+
+
+def join_multi_detections(person_positions):
+    frames = person_positions[:,1]
+    positions = person_positions[:,0]
+
+    temp = []
+    joint = []
+
+    for i in range(len(person_positions)-1):
+
+        if frames[i+1] == frames[i]:
+            temp.append(person_positions[i])
+        else:
+            temp.append(person_positions[i])
+            joint.append(temp)
+            temp = []
+
+    return joint
+
+
+def calc_pos_matrix_list():
+    """
+    ToDo:
+    Nimm i-te Ergebnisliste von join_multi_detections() und berechne Grid.
+    """
+
+
+def compare_lables_with_detections():
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+    # temp = read_timestamp(label_path)
+    temp = extend_labels()
+    all_labled_timestamps = temp[0]
+    all_fuzzy_positions = temp[1]
+
+
+    first_timestamp = all_labled_timestamps[0]
+    last_timestamp = all_labled_timestamps[len(all_labled_timestamps)-1]
+    print("all_timestamps =", all_labled_timestamps)
+    print("all_fuzzys =", all_fuzzy_positions)
+
+    print("first_timestamp =", first_timestamp)
+    print("last_timestamp =", last_timestamp)
+
+    person_positions = get_person_positions()
+    counter = 0
+    correct_classified = 0
+    wrong_classified = 0
+
+    all_person_grid = np.zeros(shape=(grid_y, grid_x))
+
+
+    startwith, endwith = calc_start_and_end_frame(person_positions, first_timestamp, last_timestamp)
+
+
+    complete_grid = np.zeros(shape=(grid_y, grid_x))
+
+    # iterate over all timestamps:
+    for i in range(startwith, endwith):
+        # Is i a frame which is labled? If so, the take the detected person coordinates
+        coordinate, frame = person_positions[i]
+        # print("coordinate =", coordinate)
+        # print("frame =", frame)
+        # print("i =", i)
+
+        c, r, g = current_grid.find_grid_for_coordinates(coordinate[1], coordinate[0])
+
+
+        complete_grid += g
+        if person_positions[i-1][1] == person_positions[i][1]:
+            all_person_grid += g
+        else:
+            fuzzy_grid = convert_fuzzy_labels_to_grid(all_fuzzy_positions[counter], grid_y, grid_x)
+            erg = np.abs(all_person_grid - fuzzy_grid)
+
+            if np.sum(erg) == 0:
+                correct_classified += 1
+            else:
+                wrong_classified += 1
+
+            counter += 1
+            all_person_grid = g
+
+
+    print("correct_classified =", correct_classified)
+    print("wrong_classified =", wrong_classified)
+    print("complete_grid =", complete_grid)
+    print(all_person_grid)
+
+    print (counter)
+    print (len(all_fuzzy_positions))
+
+    # return
 
 compare_lables_with_detections()
+
+
+def heatmap_detected_persons():
+    temp = extend_labels()
+    all_labled_timestamps = temp[0]
+    all_fuzzy_positions = temp[1]
+
+
+    first_timestamp = all_labled_timestamps[0]
+    last_timestamp = all_labled_timestamps[len(all_labled_timestamps)-1]
+    print("all_timestamps =", all_labled_timestamps)
+    print("all_fuzzys =", all_fuzzy_positions)
+
+    print("first_timestamp =", first_timestamp)
+    print("last_timestamp =", last_timestamp)
+
+    person_positions = get_person_positions()
+    # print("+++++++++", person_positions[len(person_positions)-1][1])
+
+    # print(person_positions)
+    print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+    startwith, endwith = calc_start_and_end_frame(person_positions, first_timestamp, last_timestamp)
+    print("§§§§§§§§§§§§§§§§§")
+    join_multi_detections(person_positions)
+    print("§§§§§§§§§§§§§§§§§")
+
+    complete_grid = np.zeros(shape=(grid_y, grid_x))
+
+
+    # iterate over all timestamps:
+    for i in range(startwith, endwith):
+        # Is i a frame which is labled? If so, the take the detected person coordinates
+        coordinate, frame = person_positions[i]
+        # print("coordinate =", coordinate)
+        # print("frame =", frame)
+        if i % 100 == 0:
+            print("i =", i)
+
+        c, r, g = current_grid.find_grid_for_coordinates(coordinate[1], coordinate[0])
+
+
+        complete_grid += g
+
+    print("done")
+    """
+    for i in range(len(complete_grid)):
+        print(list(complete_grid[i]))
+    # print(np.array(complete_grid, dtype=int))
+    """
+
+
+
+    plt.imshow(complete_grid, cmap='hot', interpolation='nearest')
+    plt.show()
+
+
+
+
+# heatmap_detected_persons()
+
+# compare_lables_with_detections()
 
 
 
@@ -186,3 +401,6 @@ frame_count = video_info['frame_count']
 # TODO: implement this:
 # load_person_detections(detection_file_path, fps, frame_count)
 # --------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
