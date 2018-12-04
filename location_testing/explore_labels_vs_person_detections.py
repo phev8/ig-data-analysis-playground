@@ -121,10 +121,11 @@ def convert_fuzzy_labels_to_grid(list, n_x, n_y):
 
 def extend_labels():
     org_labels = read_timestamp(label_path)
-    print(".............",org_labels)
+
     extended_timestamps = []
     extended_fuzzy_positions = []
 
+    print("Last Timestamp in Labels D2_S2.xlsx:", org_labels[len(org_labels)-1])
     for i in range(len(org_labels)-1):
         start_time = org_labels[i][0]
         end_time = org_labels[i+1][0]
@@ -137,6 +138,9 @@ def extend_labels():
         for j in range(start_time, end_time):
             extended_timestamps.append(j)
             extended_fuzzy_positions.append(cur_label)
+
+    extended_timestamps.append(org_labels[len(org_labels)-1][0])
+    extended_fuzzy_positions.append(org_labels[len(org_labels)-1][1])
 
     # print("~~~~~~~~~~~~\n", extended_timestamps)
     # print("~~~~~~~~~~~~\n", extended_fuzzy_positions)
@@ -321,7 +325,7 @@ def compare_lables_with_detections():
 
     # return
 
-compare_lables_with_detections()
+# compare_lables_with_detections()
 
 
 def heatmap_detected_persons():
