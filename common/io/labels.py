@@ -6,6 +6,7 @@ def read_label_xls(path):
     """
     Read label xlsx and return pandas dataframe for each person's labels
     """
+
     label_data = pd.read_excel(path, skiprows=2)
 
     green_labels = []

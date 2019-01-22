@@ -4,13 +4,24 @@ import cv2
 import glob
 import matplotlib.pyplot as plt
 import time
+
+import os
+import sys
+module_path = os.path.abspath(os.getcwd() + '\\..')
+if module_path not in sys.path:
+    sys.path.append(module_path)
+
+
 from Video_Processing import Video_to_Images
 
+
+resized_width = 150
+resized_height = 150
 
 
 def calc_group_histogramms():
 
-    prefix_path = Video_to_Images.get_data_dir() + "Persons_Handsorted\\"
+    prefix_path = Video_to_Images.get_data_dir() + "Skeletons_Handsorted\\"
 
     # Mögliche Endungen: "Blue Button", "Green Button", "Red Button" oder Dummy
     groups = ["Blue Button", "Green Button", "Red Button", "Dummy", "Schwarze Weste", "Sonstiges"]
@@ -19,70 +30,70 @@ def calc_group_histogramms():
 
     for group in groups:
         data_path = os.path.join(prefix_path+group+"\\", '*g')
-
+        print(data_path)
         # Speichere alle Dateinen aus dem Ordner data_path in der Variable files:
         files = sorted(glob.glob(data_path))
 
         # Anzahl der Vorsortierten Bilder aus der aktuellen Gruppe:
         print("Gruppe", group, "enthält", len(files), "vorsortierte Bilder.")
         data = []
+        if len(files) > 0:
+            # Einlesen aller vorsortierten Daten:
+            for img in files:
+                image = cv2.imread(img)
+                image = cv2.resize(image, dsize=(resized_width, resized_height))
+                data.append(image)
 
-        # Einlesen aller vorsortierten Daten:
-        for img in files:
-            image = cv2.imread(img)
-            image = cv2.resize(image, dsize=(300, 300))
-            data.append(image)
-
-        # Berechne für alle vorsortierten Bilder der aktuelle Gruppe das gemittelte und normalisierte Histogramm über alle Kanäle (BGR, statt RGB, da cv2):
-        color = ('b', 'g', 'r')
-        all_hists_cur_group = []
-        hist_all_channels = []
-        for i, col in enumerate(color):
-            # Die Funktion calcHist berechnet Histogramme aus eine Liste und mittelt diese.
-            hist = cv2.calcHist(data, [i], None, [256], [0, 256])
-            hist = cv2.normalize(hist, None)
-            hist_all_channels.append(hist)
-        all_hists_cur_group.append(hist_all_channels)
-
-        for img_id in range(len(files)):
+            # Berechne für alle vorsortierten Bilder der aktuelle Gruppe das gemittelte und normalisierte Histogramm über alle Kanäle (BGR, statt RGB, da cv2):
+            color = ('b', 'g', 'r')
+            all_hists_cur_group = []
             hist_all_channels = []
             for i, col in enumerate(color):
                 # Die Funktion calcHist berechnet Histogramme aus eine Liste und mittelt diese.
-                hist = cv2.calcHist([data[img_id]], [i], None, [256], [0, 256])
+                hist = cv2.calcHist(data, [i], None, [256], [0, 256])
                 hist = cv2.normalize(hist, None)
                 hist_all_channels.append(hist)
             all_hists_cur_group.append(hist_all_channels)
 
-        group_histograms.append(all_hists_cur_group)
+            for img_id in range(len(files)):
+                hist_all_channels = []
+                for i, col in enumerate(color):
+                    # Die Funktion calcHist berechnet Histogramme aus eine Liste und mittelt diese.
+                    hist = cv2.calcHist([data[img_id]], [i], None, [256], [0, 256])
+                    hist = cv2.normalize(hist, None)
+                    hist_all_channels.append(hist)
+                all_hists_cur_group.append(hist_all_channels)
+
+            group_histograms.append(all_hists_cur_group)
     return group_histograms
 
 
 
 
-def compare_histograms(estimated_histograms, hist_new_person):
-    # estimated_histograms ist eine Liste mit vier Elementen. Jedes Elemente besteht aus drei Arrays:
+def compare_histograms(histos_handsorted_persons, hist_new_person):
+    # histos_handsorted_persons ist eine Liste mit vier Elementen. Jedes Element besteht aus drei Arrays:
     #       geschätztes normalisiertes Histogramm des blauen Kanals
     #       geschätztes normalisiertes Histogramm des gruenen Kanals
     #       geschätztes normalisiertes Histogramm des roten Kanals
     # Das erste Element repäsentiert die Frau mit dem blauen Button, das zweite Element die Frau mit dem gruenen Buttonm, das dritte
-    # Element dir Frau mit dem roten Button und das vierte Element repräsentiert die geschätzten Histogramme des Dummys.
+    # Element die Frau mit dem roten Button und das vierte Element repräsentiert die Histogramme des Dummys.
 
     # Bisher beste Übereinstimmung, zu beginn extrem große Abweichung:
     best_coincidence = 10**9
     group_id = -1
-    for group in range(len(estimated_histograms)):
-        for img_id in range(len(estimated_histograms[group])):
+    for group in range(len(histos_handsorted_persons)):
+        for img_id in range(len(histos_handsorted_persons[group])):
             coincidence = 0
-            for chanel_id in range(len(estimated_histograms[group][img_id])):
+            for chanel_id in range(len(histos_handsorted_persons[group][img_id])):
                 summe = 0
-                for k in range(len(estimated_histograms[group][img_id][chanel_id])):
-                    summe += np.abs(estimated_histograms[group][img_id][chanel_id][k][0] - hist_new_person[chanel_id][k][0])
+                for k in range(len(histos_handsorted_persons[group][img_id][chanel_id])):
+                    summe += np.abs(histos_handsorted_persons[group][img_id][chanel_id][k][0] - hist_new_person[chanel_id][k][0])
                 coincidence += summe
             if best_coincidence > coincidence:
                 best_coincidence = coincidence
                 group_id = group
 
-    if best_coincidence > 14.00:
+    if best_coincidence > 10.00:        # vorher 14.00
         group_id = 5
 
     print("best_coincidence =", best_coincidence)
@@ -91,9 +102,9 @@ def compare_histograms(estimated_histograms, hist_new_person):
 
 
 
-def split_Persons(estimated_histograms):
+def split_Persons(histos_handsorted_persons):
     starttime = time.time()
-    prefix_path = Video_to_Images.get_data_dir() + "Persons_separated\\"
+    prefix_path = Video_to_Images.get_data_dir() + "Skeletons_separated\\"
     # Mögliche Endungen: "Blue Button", "Green Button", "Red Button" oder Dummy
     groups = ["Blue Button", "Green Button", "Red Button", "Dummy", "Schwarze Weste", "Sonstiges"]
     group_histograms = []
@@ -106,7 +117,7 @@ def split_Persons(estimated_histograms):
         data_path = os.path.join(separated_group_path, '*g')
 
 
-    all_persons_path = os.path.join(Video_to_Images.get_data_dir() + "Persons_extracted\\", '*g')
+    all_persons_path = os.path.join(Video_to_Images.get_data_dir() + "Skeletons_extracted_around_MidHip_all_detections\\", '*g')
 
     # Speichere alle Dateinen aus dem Ordner data_path in der Variable files:
     files = sorted(glob.glob(all_persons_path), key=os.path.getmtime)
@@ -116,13 +127,18 @@ def split_Persons(estimated_histograms):
 
 
     print("Beginn reading all Images")
-    progress_counter = 0
+    progress_counter = 145000 # 38600
+    progress_end = 150000 # 38600
+
     # Einlesen aller vorsortierten Daten:
-    for img in files:
+    for i in range(progress_counter, len(files)):
+        img = files[i]
+        print(img)
+
         progress_counter += 1
         print(progress_counter)
         image = cv2.imread(img)
-        image_resized = cv2.resize(image, (300,300))
+        image_resized = cv2.resize(image, (resized_width, resized_height))
 
         # Berechne für aktuelles Bild das normalisierte Histogramm über alle Kanäle (BGR, statt RGB, da cv2):
         color = ('b', 'g', 'r')
@@ -135,9 +151,12 @@ def split_Persons(estimated_histograms):
             # plt.plot(hist, color=col)
             # plt.xlim([0, 256])
         # plt.show()
-        group_id = compare_histograms(estimated_histograms, hist_all_channels)
+        group_id = compare_histograms(histos_handsorted_persons, hist_all_channels)
         filepath = prefix_path + groups[group_id] + "\\" + os.path.basename(img)
         cv2.imwrite(filename=filepath, img=image)
+        
+        if i == progress_end:
+            break
 
     print("Read process done.")
     runtime = time.time() - starttime
@@ -145,8 +164,8 @@ def split_Persons(estimated_histograms):
 
 
 
-estimated_histograms = calc_group_histogramms()
-split_Persons(estimated_histograms)
+# estimated_histograms = calc_group_histogramms()
+# split_Persons(estimated_histograms)
 
 
 def plot_histogram():

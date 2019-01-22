@@ -1,18 +1,30 @@
 import os
+import sys
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
+from Skeleton import Global_Constants
 
 
 # filename = '/Volumes/DataDrive/igroups_recordings/southampton_4/processed_data/images/general_class_rois/cam_2_detections_general.pkl'
-main_dir = str(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
-git_dir = str(os.path.abspath(os.path.join(main_dir, os.pardir)))
-filename = str(os.path.abspath(os.path.join(git_dir, os.pardir))) + "\\Daten\\igroups_student_project\\processed_data\\images/general_class_rois\\cam_2_detections_general.pkl"
+"""
+main_dir = Global_Constants.main_dir
+git_dir = Global_Constants.git_dir
+project_dir = Global_Constants.project_dir
+data_dir = Global_Constants.data_dir
+data_dir_ext = Global_Constants.data_dir_ext
+filename = Global_Constants.cam_2_labels_pickle
+output_dir = Global_Constants.output_dir
+skeletons_dir = Global_Constants.skeletons_dir
+"""
+
+
+
+
 
 acc = np.zeros((1300, 800))
 
-with open(filename, 'rb') as f:
-    data = pickle.load(f)
+data = None
 
 def show_data():
     print(data)
@@ -32,6 +44,17 @@ def get_center(roi):
 
 
 def read_person_positions():
+    filename = Global_Constants.cam_2_labels_pickle
+    sys.path.append(filename)
+
+    if os.path.isfile(filename):
+        print("Ja, die Datei existiert. Pfad:", filename)
+    else:
+        print("Der Pfad zur Pickel Datei cam_2_detections_general.pkl fehlt. Sie sollte hier liegen:", filename)
+
+    with open(filename, 'rb') as f:
+        data = pickle.load(f)
+
     positions = []
     region_data = np.zeros((0, 4))
     for d in data['results']:
@@ -60,30 +83,21 @@ def read_person_positions():
     reg = np.array(region_data)
     return [pos,reg]
 
-pos, reg = read_person_positions()
 
 
 
-print("------------------------------------------------------------------------------------------------------------------------")
 
-print("pos =", pos)
-print("\npos[0] =", pos[0])
-print("\npos[0][0] = center_point =", pos[0][0])
-print("\npos[0][1] = frame_index =", pos[0][1] , "\n\n")
-print(pos.shape)
-
-print("------------------------------------------------------------------------------------------------------------------------")
-# print(reg)
 
 
 
 
 def get_person_positions():
+    pos, reg = read_person_positions()
     return pos
 
 
-
 def plot_pos_and_reg(acc):
+    pos, reg = read_person_positions()
     plt.imshow(acc)
     # plt.plot(pos[:, 0], pos[:, 1], 'x')
     # plt.axis('equal')
@@ -100,4 +114,17 @@ def plot_pos_and_reg(acc):
 
 
 
+def show():
+    pos, reg = read_person_positions()
 
+
+    print("------------------------------------------------------------------------------------------------------------------------")
+
+    print("pos =", pos)
+    print("\npos[0] =", pos[0])
+    print("\npos[0][0] = center_point =", pos[0][0])
+    print("\npos[0][1] = frame_index =", pos[0][1] , "\n\n")
+    print(pos.shape)
+
+    print("------------------------------------------------------------------------------------------------------------------------")
+    # print(reg)

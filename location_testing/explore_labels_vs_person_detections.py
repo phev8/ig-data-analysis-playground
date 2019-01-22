@@ -17,9 +17,28 @@ experiment_root = str(os.path.abspath(os.path.join(git_dir, os.pardir))) + "\\Da
 # print(experiment_root)
 
 
-label_path = os.path.join(experiment_root, 'labels', 'Labels D2_S2.xlsx')
+grid_x = 4
+grid_y = 2
 
-labels_g, labels_r, labels_b,  = read_label_xls(label_path)
+height = None
+width = None
+
+video_info = None
+current_grid = None
+
+def read_video_data():
+    global video_info
+    global height
+    global width
+    global current_grid
+
+    video_info = load_video_infos(experiment_root, 'cam_2.MP4')
+
+    height = video_info['height']
+    width = video_info['width']
+
+    current_grid = ImageGrid(width, height, grid_x, grid_y)
+
 
 
 # print(labels_g.position)
@@ -62,31 +81,7 @@ class ImageGrid:
 
 
 
-video_info = load_video_infos(experiment_root, 'cam_2.MP4')
 
-
-grid_x = 4
-grid_y = 2
-height = video_info['height']
-width = video_info['width']
-current_grid = ImageGrid(width, height, grid_x, grid_y)
-
-
-"""
-c, r, g = current_grid.find_grid_for_coordinates(300, 0)
-print("---------------------")
-print("c =", c)
-print("r =", r)
-print("g =", g)
-"""
-
-
-"""
-ToDo:
-Iteriere über alle pos[i][1] und überprüfe mit Hilfe der Hilfsfunktion read_timestamp(path) aus labels.py ob der frame_index identisch ist. 
-    Wenn ja überprüfe ob die Koordinaten aus pos[i][0] zu den Labels aus der Excel Datei passen
-    Sonst mache nichts, denn der Frame ist nicht gelabelt.
-"""
 
 
 def convert_fuzzy_labels_to_grid(list, n_x, n_y):
@@ -120,6 +115,10 @@ def convert_fuzzy_labels_to_grid(list, n_x, n_y):
 
 
 def extend_labels():
+    label_path = os.path.join(experiment_root, 'labels', 'Labels D2_S2.xlsx')
+    print("label_path =", label_path)
+    labels_g, labels_r, labels_b, = read_label_xls(label_path)
+
     org_labels = read_timestamp(label_path)
 
     extended_timestamps = []
@@ -384,27 +383,48 @@ def heatmap_detected_persons():
 
 
 
-
-# heatmap_detected_persons()
-
-# compare_lables_with_detections()
-
-
-
-detection_file_path = os.path.join(experiment_root, 'processed_data', 'images', 'general_class_rois', 'cam_2_detections_general.pkl')
-
-fps = video_info['fps']
-frame_count = video_info['frame_count']
+def main():
 
 
 
 
-# --------------------------------------------------------------------------------------------------------------------------------------------
-# Wozu benötigen wir diese Funktion? In read_person_detection ist doch schon eine Methode, die alle Positionen ließt.
+    """
+    c, r, g = current_grid.find_grid_for_coordinates(300, 0)
+    print("---------------------")
+    print("c =", c)
+    print("r =", r)
+    print("g =", g)
+    """
 
-# TODO: implement this:
-# load_person_detections(detection_file_path, fps, frame_count)
-# --------------------------------------------------------------------------------------------------------------------------------------------
+
+    """
+    ToDo:
+    Iteriere über alle pos[i][1] und überprüfe mit Hilfe der Hilfsfunktion read_timestamp(path) aus labels.py ob der frame_index identisch ist. 
+        Wenn ja überprüfe ob die Koordinaten aus pos[i][0] zu den Labels aus der Excel Datei passen
+        Sonst mache nichts, denn der Frame ist nicht gelabelt.
+    """
+
+
+    # heatmap_detected_persons()
+
+    # compare_lables_with_detections()
+
+
+
+    detection_file_path = os.path.join(experiment_root, 'processed_data', 'images', 'general_class_rois', 'cam_2_detections_general.pkl')
+
+    fps = video_info['fps']
+    frame_count = video_info['frame_count']
+
+
+
+
+    # --------------------------------------------------------------------------------------------------------------------------------------------
+    # Wozu benötigen wir diese Funktion? In read_person_detection ist doch schon eine Methode, die alle Positionen ließt.
+
+    # TODO: implement this:
+    # load_person_detections(detection_file_path, fps, frame_count)
+    # --------------------------------------------------------------------------------------------------------------------------------------------
 
 
 

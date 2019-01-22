@@ -2,16 +2,25 @@ import os
 import cv2
 
 
+
 main_dir = str(os.path.abspath(os.path.join(os.getcwd(), os.pardir)))
 git_dir = str(os.path.abspath(os.path.join(main_dir, os.pardir)))
 project_dir = str(os.path.abspath(os.path.join(git_dir, os.pardir)))
 data_dir = project_dir + "\\Daten\\igroups_student_project\\"
-filename = project_dir + "\\Daten\\igroups_student_project\\videos\\cam_2.mp4"
-output_dir = project_dir + "\\Daten\\igroups_student_project\\Frames_extracted\\"
+data_dir_ext = "H:\\Uni\\Statistische KI Projekt\\Daten\\igroups_student_project\\"
+filename = project_dir + "\\Daten\\igroups_student_project\\videos\\cam_3.mp4"
+# output_dir = project_dir + "\\Daten\\igroups_student_project\\Frames_extracted\\"
+output_dir = "H:\\Uni\\Statistische KI Projekt\\Daten\\igroups_student_project\\Frames_extracted_cam_3\\"
 
 
 def get_project_dir():
     return project_dir
+
+
+
+def get_data_dir_ext():
+    return data_dir_ext
+
 
 
 def get_data_dir():
@@ -47,3 +56,5 @@ def convert_Video_to_single_Frames():
         counter += 1
 
     print("\n\n--------------------------\nYour Frames are stored in:\n" + output_dir)
+
+# convert_Video_to_single_Frames()
