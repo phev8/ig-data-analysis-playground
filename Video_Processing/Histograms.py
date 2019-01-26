@@ -170,9 +170,10 @@ def split_Persons(histos_handsorted_persons):
 
 def plot_histogram():
     # Mögliche Endungen: "Blue Button", "Green Button", "Red Button" oder Dummy
-    path = Video_to_Images.get_data_dir() + "Persons_Handsorted\\Red Button\\"
+    path = Video_to_Images.get_data_dir() + "Persons_Handsorted_cam_2\\Red Button\\"
 
     data_path = os.path.join(path, '*g')
+    print("data_path =", data_path)
     files = sorted(glob.glob(data_path))
 
     print("len(files) =", len(files))
@@ -247,4 +248,4 @@ def plot_histogram():
         plt.xlim([0, 256])
     plt.show()
 
-# plot_histogram()
+plot_histogram()

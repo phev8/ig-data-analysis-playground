@@ -135,16 +135,24 @@ def test_new_point(coordinates, opt_values, xs, ys, zs):
 
 
 def test_features(opt_values, xs_black, ys_black, zs_black):
+
+    reconstruct_2d = False
+
     pkl_file2 = open(data_dir + 'Final_Feature_Matrix.pkl', "rb")
     feature_matrix = pickle.load(pkl_file2)
     colors = []
 
     fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+    if not reconstruct_2d:
+        ax = fig.add_subplot(111, projection='3d')
+    else:
+        ax = fig.add_subplot(111)
 
     ax.set_xlabel('X Label')
     ax.set_ylabel('Y Label')
-    ax.set_zlabel('Z Label')
+
+    if not reconstruct_2d:
+        ax.set_zlabel('Z Label')
 
     ax.scatter(xs_black, ys_black, zs_black, c='black', marker='x')
     xs_green = []
@@ -245,9 +253,15 @@ def test_features(opt_values, xs_black, ys_black, zs_black):
             plt.pause(0.05)
 
     if True:
-        ax.scatter(xs_green, ys_green, zs_green, c='green', marker='o')
-        ax.scatter(xs_red, ys_red, zs_red, c='red', marker='o')
-        ax.scatter(xs_blue, ys_blue, zs_blue, c='blue', marker='o')
+        if reconstruct_2d:
+            ax.scatter(xs_green, ys_green, c='green', marker='o')
+            ax.scatter(xs_red, ys_red, c='red', marker='o')
+            ax.scatter(xs_blue, ys_blue, c='blue', marker='o')
+        else:
+            ax.scatter(xs_green, ys_green, zs_green, c='green', marker='o')
+            ax.scatter(xs_red, ys_red, zs_red, c='red', marker='o')
+            ax.scatter(xs_blue, ys_blue, zs_blue, c='blue', marker='o')
+
     plt.show()
     # plot_3D_points(xs, ys, zs, marker='o', color=colors)
 

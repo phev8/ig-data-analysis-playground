@@ -1,9 +1,6 @@
 import os
 import pickle
 
-import numpy as np
-import matplotlib.pyplot as plt
-
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
@@ -22,18 +19,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import f1_score
 
-from matplotlib.ticker import MultipleLocator
-
 from Skeleton import Global_Constants
-
-import io
-from sklearn.tree import export_graphviz
-import graphviz
-import pydotplus
-from scipy import misc
-
-import os
-os.environ["PATH"] += os.pathsep + 'D:\\Weitere Programme\\GraphViz\\bin'
 
 main_dir = Global_Constants.main_dir
 git_dir = Global_Constants.git_dir
@@ -61,7 +47,7 @@ def create_train_matrix():
     output_matrix = [elem[-1] for elem in feature_matrix]
 
     # print(input_matrix)
-    # print(output_matrix)
+    print("\n\nTest:", output_matrix)
 
     # input_matrix = [[1,2,3],[2,4,6],[3,6,9]]
     # output_matrix = ['1','2','3']
@@ -87,18 +73,11 @@ def test_KNN():
     neigh = pickle.load(pkl_file)
     print(neigh.score(x_test, y_test))
 
-
-
-
 def train_and_test(classifier_id):
     feature_matrix = read_feature_matrices_from_pickle_file()
     input_matrix = [elem[1]+elem[2]+elem[3] for elem in feature_matrix]
     output_matrix = [elem[-1] for elem in feature_matrix]
     x_train, x_test, y_train, y_test = create_train_matrix()
-    print("y_train =", y_train)
-
-    labels = sorted(list(set(output_matrix)), reverse=True)
-    print("labels =", labels)
 
     if classifier_id == 0:
         classifier = KNeighborsClassifier(n_neighbors=3)
@@ -113,30 +92,14 @@ def train_and_test(classifier_id):
         classifier = BernoulliNB()
         name = 'BernoulliNB'
     if classifier_id == 4:
-        classifier = SVC()
+        classifier = svm.SVC(gamma='scale')
         name = 'SVC'
     if classifier_id == 5:
-        classifier = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=0)
+        classifier = RandomForestClassifier(n_estimators=100, max_depth=2, random_state=0)
         name = 'RandomForestClassifier'
     if classifier_id == 6:
-        classifier = tree.DecisionTreeClassifier(criterion='gini', max_leaf_nodes=100, min_impurity_decrease=0.001)
-
+        classifier = tree.DecisionTreeClassifier()
         name = 'DecisionTreeClassifier'
-
-        classifier.fit(x_train, y_train)
-
-        save_path = os.getcwd() + "\\mytree.dot"
-        print("save_path =", save_path)
-        export_graphviz(classifier, out_file=save_path, feature_names=["cam1_x", "cam1_y", "cam2_x", "cam2_y", "cam3_x", "cam3_y"], class_names=labels)
-        with open(save_path) as f:
-            dot_graph = f.read()
-        print("dot_graph =", dot_graph)
-        s = graphviz.Source(dot_graph, filename=os.getcwd() + "\\mytree.gv", format="png")
-        s.view()
-        print("s =", s)
-
-
-
 
     classifier.fit(x_train, y_train)
     scores = cross_val_score(classifier, input_matrix, output_matrix, cv=3)
@@ -151,56 +114,13 @@ def train_and_test(classifier_id):
     print('Cross Validation Scores:', scores)
     print("Mean Accuracy (Std): %0.2f (+/- %0.2f)" % (scores.mean(), scores.std()))
 
-
-    cm = confusion_matrix(y_test, predicted, labels=labels)
-    print('confusion matrix:\n', )
-
-    index_list = []
-
-    use_reduced_conf_matrix = False
-
-    if use_reduced_conf_matrix:
-        for i in range(len(cm)):
-            print("cm[i] =", cm[i])
-            print("cm[i][i] =", cm[i][i])
-            if cm[i][i] >= 100:
-                index_list.append(i)
-
-        print("index_list =", index_list)
-        print("cm =", type(cm))
-        cm_new = [list(cm[elem]) for elem in index_list]
-        print("cm_new =", cm_new)
-        cm_new = [np.array(elem)[index_list] for elem in cm_new]
-        cm = np.array(cm_new)
-        # cm_new = cm[index_list,index_list]
-        print("cm_new =", cm_new)
-        labels = list(np.array(labels)[index_list])
-
-
-    print(y_test)
-    print(labels)
-    print(cm)
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    cax = ax.matshow(cm)
-    title = 'Confusion matrix of the ' + name + '-classifier'
-    plt.title(title)
-    fig.colorbar(cax)
-    ax.set_xticklabels([''] + labels)
-    ax.set_yticklabels([''] + labels)
-
-    ax.xaxis.set_major_locator(MultipleLocator(1))
-    ax.yaxis.set_major_locator(MultipleLocator(1))
-
-    plt.xlabel('Predicted')
-    plt.ylabel('True')
-    plt.show()
+    print('confusion matrix:\n', confusion_matrix(y_test, predicted))
 
     print('\n')
 
 if __name__ == '__main__':
 
-    for i in np.arange(6,7):
+    for i in range(3):
         classifier_id = i
         train_and_test(classifier_id)
 

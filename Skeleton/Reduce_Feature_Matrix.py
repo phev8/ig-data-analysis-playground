@@ -1,5 +1,6 @@
 import os
 import glob
+import numpy as np
 import pickle
 import cv2
 
@@ -110,7 +111,7 @@ def main():
 
         labels, _ = find_next_entry(huge_feature_matrix, cam2_frame, last_search_id)
 
-        label = ''
+        label = 'unknown'
 
         # Leider haben wir in der classified_persons Liste eine andere Personenbezeichnung wie in der Excel Datei. In der classified_persons gilt:
         # 0 entspricht Blue Button
@@ -121,36 +122,39 @@ def main():
 
         new_person_id = -1
 
+        possible_labels = ['B2', 'CO', 'CT', 'F', 'H', 'LF', 'LH', 'MO', 'RF', 'RH', 'ST', 'W']
+
         # 0 entspricht in classified_persons Blue Button, ist in der Excel Datei aber an Position 2:
-        if person_id == 0:
+        if person_id == 0 and labels[2] in possible_labels:
             label = labels[2]
             new_person_id = 2
 
-        # 1 entspricht in classified_persons Green Button, ist in der Excel Datei aber an Position 2:
-        if person_id == 1:
+        # 1 entspricht in classified_persons Green Button, ist in der Excel Datei aber an Position 0:
+        if person_id == 1 and labels[0] in possible_labels:
             label = labels[0]
             new_person_id = 0
 
-        # 2 entspricht in classified_persons Red Button, ist in der Excel Datei aber an Position 2:
-        if person_id == 2:
+        # 2 entspricht in classified_persons Red Button, ist in der Excel Datei aber an Position 1:
+        if person_id == 2 and labels[1] in possible_labels:
             label = labels[1]
             new_person_id = 1
 
-        # if last_search_id != -1:
-        """
-        print("person_id =", person_id)
-        """
-        print("elem =", elem)
-        print("labels =", labels)
+        if label != 'unknown':
+            # if last_search_id != -1:
+            """
+            print("person_id =", person_id)
+            """
+            print("elem =", elem)
+            print("labels =", labels)
 
-        minute = int(float(cam2_frame)/(25.0*60.0))
-        sekunde = int(float(cam2_frame - (minute*25*60))/25.0)
-        print("Person", person_id, "wurde in Kamera 2 Frame", cam2_frame, "(=" , minute, ":", sekunde ,")","an der Stelle", label, "erkannt.")
+            minute = int(float(cam2_frame)/(25.0*60.0))
+            sekunde = int(float(cam2_frame - (minute*25*60))/25.0)
+            print("Person", person_id, "wurde in Kamera 2 Frame", cam2_frame, "(=" , minute, ":", sekunde ,")","an der Stelle", label, "erkannt.")
 
-        # In der Ausgabedatei ist der zweitletzte Eintrag die Personennummer, passend zur Excel Datei.
-        next_row = [cam2_frame, cam1_coordinates, cam2_coordinates, cam3_coordinates, new_person_id, label]
-        new_feature_matrix.append(next_row)
-        print("next_row =", next_row, "\n\n")
+            # In der Ausgabedatei ist der zweitletzte Eintrag die Personennummer, passend zur Excel Datei.
+            next_row = [cam2_frame, cam1_coordinates, cam2_coordinates, cam3_coordinates, new_person_id, label]
+            new_feature_matrix.append(next_row)
+            print("next_row =", next_row, "\n\n")
 
     pkl_file = open(data_dir + 'Final_Feature_Matrix.pkl', 'wb')
     pickle.dump(new_feature_matrix, pkl_file)
