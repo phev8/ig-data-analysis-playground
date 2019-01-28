@@ -86,7 +86,7 @@ def find_multiple_frames_same_person():
         print("Keine Duplikate gefunden.")
 
 
-find_multiple_frames_same_person()
+# find_multiple_frames_same_person()
 
 
 def min_greater_zero(values, confidence):
@@ -624,4 +624,4 @@ def main(create_matrix):
 
             print("frame number =", frame_number, "\tmid_hip_xy_cam1 =", mid_hip_xy_cam1, "\tmid_hip_xy_cam2 =", mid_hip_xy_cam2, "\tmid_hip_xy_cam3 =", mid_hip_xy_cam3, "\tminmax =", minmax, "\tlabels =", labels)
 
-# main(False)
+main(False)

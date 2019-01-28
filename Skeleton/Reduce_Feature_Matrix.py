@@ -169,5 +169,21 @@ falsch klassifizierte Bilder richtig einordnen. Vermutlich entspricht dieses Bil
 
 
 
+def show_Final_Feature_Matrix():
+    print("Read Feature Matrix ...")
+    pkl_file1 = open(data_dir + 'Final_Feature_Matrix.pkl', "rb")
+    feature_matrix = pickle.load(pkl_file1)
+    print("Done. \n")
+    print("Print whole Feature Matrix:")
+
+    for elem in feature_matrix:
+        print(elem)
+
+    print("Done.")
+
+
+
+
 if __name__ == '__main__':
-    main()
+    # main()
+    show_Final_Feature_Matrix()

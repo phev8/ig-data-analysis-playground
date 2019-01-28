@@ -17,10 +17,8 @@ def get_project_dir():
     return project_dir
 
 
-
 def get_data_dir_ext():
     return data_dir_ext
-
 
 
 def get_data_dir():

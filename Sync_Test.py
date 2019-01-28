@@ -21,7 +21,7 @@ def sync_given_cam3_org_video(frame_from_cam3):
     frame_from_cam2 = frame_from_cam3 + offset_cam3_org_video
     return [frame_from_cam1, frame_from_cam2]
 
-print("sync_given_cam1_org_video:", sync_given_cam1_org_video(7254))
+print("sync_given_cam1_org_video:", sync_given_cam1_org_video(21000))
 print("sync_given_cam2_org_video:", sync_given_cam2_org_video(7375))
 print("sync_given_cam3_org_video:", sync_given_cam3_org_video(34125))
 
@@ -65,6 +65,6 @@ def sync_given_cam3_org_to_skeleton(frame_from_cam3_org):
     skeleton_frame_cam3 = frame_from_cam3_org - offset_cam3_between_skeleton_and_org
     return skeleton_frame_cam3
 
-print("cam 1: ", sync_given_cam1_org_to_skeleton(29578))
-print("cam 2: ", sync_given_cam2_org_to_skeleton(26384))
-print("cam 3: ", sync_given_cam3_org_to_skeleton(9703))
+print("cam 1: ", sync_given_cam1_org_to_skeleton(21000))
+print("cam 2: ", sync_given_cam2_org_to_skeleton(21161))
+print("cam 3: ", sync_given_cam3_org_to_skeleton(20748))

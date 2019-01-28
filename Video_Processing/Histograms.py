@@ -5,7 +5,10 @@ import glob
 import matplotlib.pyplot as plt
 import time
 
-import os
+import matplotlib.image as mpimg
+import matplotlib.pylab as pylab
+
+
 import sys
 module_path = os.path.abspath(os.getcwd() + '\\..')
 if module_path not in sys.path:
@@ -169,27 +172,38 @@ def split_Persons(histos_handsorted_persons):
 
 
 def plot_histogram():
+    groups = ["Blue Button", "Green Button", "Red Button", "Dummy", "Schwarze Weste", "Sonstiges"]
+
     # Mögliche Endungen: "Blue Button", "Green Button", "Red Button" oder Dummy
-    path = Video_to_Images.get_data_dir() + "Persons_Handsorted_cam_2\\Red Button\\"
+    path_all = Video_to_Images.get_data_dir() + "Skeletons_extracted_around_MidHip_all_detections\\"
+
+    group = 5
+    path = Video_to_Images.get_data_dir() + "Histogramme\\Skeletons_Handsorted_for_Presentation\\" + groups[group] + "\\"
+    save_path = Video_to_Images.data_dir + "Histogramme\\" + groups[group] + "\\"
 
     data_path = os.path.join(path, '*g')
     print("data_path =", data_path)
-    files = sorted(glob.glob(data_path))
+    files = sorted(glob.glob(data_path), key=os.path.getmtime)
 
     print("len(files) =", len(files))
 
     verteilung = []
     data = []
     for f1 in files:
+        filename = f1.split('\\')[-1]
+        print("f1 =", f1)
+        print("f1.name =", f1.split('\\')[-1])
+
         img = cv2.imread(f1)
         print(type(img))
-        data.append(img)
+        # data.append(img)
         """
         normalizedImg = cv2.normalize(img, None)
         cv2.imshow('Hallo', img)
         cv2.waitKey(0)
         """
 
+        """
         test = np.zeros(shape=(100,100,3))
         test[:,:,0] = 1     # Blau
         # test[:,:,1] = 1     # Gruen
@@ -209,6 +223,21 @@ def plot_histogram():
 
         # cv2.imshow('Hallo', img)
         # cv2.waitKey(0)
+        """
+        color = ('b', 'g', 'r')
+        for i, col in enumerate(color):
+            histr = cv2.calcHist([img], [i], None, [256], [0, 256])
+            hist = cv2.normalize(histr, None)
+            # print(len(histr))
+            plt.plot(hist, color=col)
+            plt.xlim([0, 256])
+        pylab.savefig(save_path + filename)
+        pylab.close()
+        # plt.im(Video_to_Images.data_dir + "Histogramme\\all\\" + filename, hist)
+        # plt.show()
+
+
+    """
     print("verteilung =", verteilung)
     erg_blau = [item[0] for item in verteilung]
     erg_green = [item[1] for item in verteilung]
@@ -247,5 +276,6 @@ def plot_histogram():
         plt.plot(hist, color=col)
         plt.xlim([0, 256])
     plt.show()
+    """
 
 plot_histogram()
